@@ -1,0 +1,52 @@
+server:
+  port: ${SERVER_PORT:8384}
+
+spring:
+  application:
+    name: zm-notification-service
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_GROUP_ID:zm-notification-service}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Cross-service events: ignore the producer's __TypeId__ header and
+        # always deserialise to our own record — producers stay decoupled from
+        # our package names.
+        spring.json.value.default.type: zm.notification.event.NotificationRequested
+        spring.json.use.type.headers: false
+        spring.json.trusted.packages: "*"
+    producer:
+      # Needed by @RetryableTopic to forward to the retry / dead-letter topics.
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# The topic every ZM service emits notification requests to.
+notification:
+  topic: ${NOTIFICATION_TOPIC:zm.notifications.v1}
+  email:
+    zepto:
+      # Single owner of the ZeptoMail secret now (was duplicated in ivy-be + IAM).
+      # Baked default so it works out of the box; override via env in prod.
+      token: ${ZEPTO_TOKEN:Zoho-enczapikey yA6KbHsLuguiy2IGSBFsh5eJpYk3/qo8iSqwtC7gKMwnLtLli6E50EI+K4HoITaMj4WEs61RbNkRcYCx69wNepVnYYJZLJTGTuv4P2uV48xh8ciEYNYvgZWpC7MQE6VMeB8hDC05T/YnWA==}
+      from-address: ${ZEPTO_FROM_ADDRESS:noreply@ivyevents.mk}
+      from-name: ${ZEPTO_FROM_NAME:Ivy Events}
+      base-url: ${ZEPTO_BASE_URL:https://api.zeptomail.eu}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    zm.notification: DEBUG
