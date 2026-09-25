@@ -1,10 +1,10 @@
 package zm.notification.consumer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.BackOff;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 import zm.notification.NotificationService;
 import zm.notification.event.NotificationRequested;
@@ -28,9 +28,15 @@ public class NotificationConsumer {
         this.service = service;
     }
 
+    /*
+        Spring Kafka 4 carries its own @BackOff and no longer pulls in
+        spring-retry, so the attribute is `backOff` and the annotation comes
+        from org.springframework.kafka.annotation. The delays are unchanged:
+        2s, then ×3 each attempt, four attempts in all.
+     */
     @RetryableTopic(
             attempts = "4",
-            backoff = @Backoff(delay = 2000, multiplier = 3.0),
+            backOff = @BackOff(delay = 2000, multiplier = 3.0),
             topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
     )
     @KafkaListener(topics = "${notification.topic:zm.notifications.v1}",
