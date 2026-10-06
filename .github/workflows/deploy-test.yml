@@ -57,8 +57,8 @@ jobs:
             docker rm zm-notification-service || true
 
             echo "🚀 Start notification service (test)"
-            # KAFKA_BOOTSTRAP must point at the Kafka broker on ivy-net — adjust
-            # host:port to match your Kafka container's advertised listener.
+            # KAFKA_BOOTSTRAP is the zm-kafka container on ivy-net (its advertised
+            # listener, see zm-local-setup/docker-compose.droplet.yml).
             # ZeptoMail token is a baked default in application.yml; override via
             # -e ZEPTO_TOKEN=... (or an env file) if the account changes.
             docker run -d \
@@ -66,7 +66,7 @@ jobs:
               --network ivy-net \
               -p 8384:8384 \
               -e SERVER_PORT=8384 \
-              -e KAFKA_BOOTSTRAP=kafka:9092 \
+              -e KAFKA_BOOTSTRAP=zm-kafka:9092 \
               -e NOTIFICATION_TOPIC=zm.notifications.v1 \
               zmtechlabs/zm-notification-service:latest
 
