@@ -11,7 +11,7 @@ spring:
       group-id: ${KAFKA_GROUP_ID:zm-notification-service}
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
       properties:
         # Cross-service events: ignore the producer's __TypeId__ header and
         # always deserialise to our own record — producers stay decoupled from
@@ -22,7 +22,7 @@ spring:
     producer:
       # Needed by @RetryableTopic to forward to the retry / dead-letter topics.
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
 
 # The topic every ZM service emits notification requests to.
 notification:
