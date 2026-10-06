@@ -51,10 +51,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Kafka: the event backbone. Consumer + built-in retry/dead-letter. -->
+        <!-- Kafka: the event backbone. Consumer + built-in retry/dead-letter. Boot 4
+             needs the starter: plain spring-kafka never starts the @KafkaListener. -->
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
         </dependency>
 
         <dependency>
