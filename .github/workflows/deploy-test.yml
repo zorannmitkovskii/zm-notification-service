@@ -64,7 +64,7 @@ jobs:
             docker run -d \
               --name zm-notification-service \
               --network ivy-net \
-              -p 8384:8384 \
+              -p 127.0.0.1:8384:8384 \
               -e SERVER_PORT=8384 \
               -e KAFKA_BOOTSTRAP=zm-kafka:9092 \
               -e NOTIFICATION_TOPIC=zm.notifications.v1 \
