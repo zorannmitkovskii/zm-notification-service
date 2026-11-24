@@ -27,7 +27,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: zmtechlabs/zm-notification-service:latest
+          tags: |
+            zmtechlabs/zm-notification-service:latest
+            zmtechlabs/zm-notification-service:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,8 +50,8 @@ jobs:
             echo "🔧 Ensure ivy-net network exists"
             docker network inspect ivy-net >/dev/null 2>&1 || docker network create ivy-net
 
-            echo "⬇️ Pull latest image"
-            docker pull zmtechlabs/zm-notification-service:latest
+            echo "⬇️ Pull image"
+            docker pull zmtechlabs/zm-notification-service:${{ github.sha }}
 
             echo "🛑 Stop + remove old container"
             docker stop zm-notification-service || true
@@ -58,16 +60,16 @@ jobs:
             echo "🚀 Start notification service (prod)"
             # KAFKA_BOOTSTRAP is the zm-kafka container on ivy-net (its advertised
             # listener, see zm-local-setup/docker-compose.droplet.yml).
-            # In prod, override the ZeptoMail token via env instead of the baked
-            # default: add `--env-file /opt/ivy-events/env/notification.env` with
-            # ZEPTO_TOKEN=... (secret hygiene).
+            # notification.env holds the real ZEPTO_TOKEN (overrides the baked default).
             docker run -d \
               --name zm-notification-service \
               --network ivy-net \
-              -p 8384:8384 \
+              --restart unless-stopped \
+              --env-file /opt/ivy-events/env/notification.env \
+              -p 127.0.0.1:8384:8384 \
               -e SERVER_PORT=8384 \
               -e KAFKA_BOOTSTRAP=zm-kafka:9092 \
               -e NOTIFICATION_TOPIC=zm.notifications.v1 \
-              zmtechlabs/zm-notification-service:latest
+              zmtechlabs/zm-notification-service:${{ github.sha }}
 
             echo "✅ Notification service (prod) deployed successfully"
